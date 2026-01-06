@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Weather } from '../../services/weather';
 
@@ -9,18 +9,15 @@ import { Weather } from '../../services/weather';
   styleUrl: './weather-widget.scss',
 })
 export class WeatherWidget implements OnInit {
-  location: string = 'Loading...';
-  temperature: number = 0;
-  description: string = '';
-  humidity: number = 0;
-  windSpeed: number = 0;
-  loading: boolean = true;
-  error: string = '';
+  location = signal<string>('Loading...');
+  temperature = signal<number>(0);
+  description = signal<string>('');
+  humidity = signal<number>(0);
+  windSpeed = signal<number>(0);
+  loading = signal<boolean>(true);
+  error = signal<string>('');
 
-  constructor(
-    private weatherService: Weather,
-    private cdr: ChangeDetectorRef
-  ) { }
+  constructor(private weatherService: Weather) { }
 
   ngOnInit(): void {
     // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
@@ -51,18 +48,16 @@ export class WeatherWidget implements OnInit {
   fetchWeather(lat: number, lon: number): void {
     this.weatherService.getWeather(lat, lon).subscribe({
       next: (data) => {
-        this.temperature = Math.round(data.current.temperature_2m);
-        this.humidity = data.current.relative_humidity_2m;
-        this.windSpeed = Math.round(data.current.wind_speed_10m);
-        this.description = this.getWeatherDescription(data.current.weather_code);
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.temperature.set(Math.round(data.current.temperature_2m));
+        this.humidity.set(data.current.relative_humidity_2m);
+        this.windSpeed.set(Math.round(data.current.wind_speed_10m));
+        this.description.set(this.getWeatherDescription(data.current.weather_code));
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Weather fetch error:', err);
-        this.error = 'Failed to fetch weather data';
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.error.set('Failed to fetch weather data');
+        this.loading.set(false);
       }
     });
   }
@@ -70,13 +65,11 @@ export class WeatherWidget implements OnInit {
   fetchLocationName(lat: number, lon: number): void {
     this.weatherService.getLocationName(lat, lon).subscribe({
       next: (data) => {
-        this.location = data.city || data.locality || 'Unknown Location';
-        this.cdr.detectChanges();
+        this.location.set(data.city || data.locality || 'Unknown Location');
       },
       error: (err) => {
         console.error('Location fetch error:', err);
-        this.location = 'Unknown Location';
-        this.cdr.detectChanges();
+        this.location.set('Unknown Location');
       }
     });
   }

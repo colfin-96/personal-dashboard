@@ -2,24 +2,29 @@
   <h2 class="widget-title">Traffic</h2>
 
   <!-- Loading State -->
-  @if (loading) {
+  @if (loading()) {
   <div class="loading-state">
     <p>🔄 Loading traffic data...</p>
   </div>
   }
 
   <!-- Error State -->
-  @if (error && !loading) {
+  @if (error() && !loading()) {
   <div class="error-state">
-    <p>⚠️ {{ error }}</p>
+    <p class="error-message">{{ error() }}</p>
+    <button class="retry-button" (click)="retryLoadTrafficData()">🔄 Retry</button>
   </div>
   }
 
   <!-- Routes List -->
-  @if (!loading) {
+  @if (!loading()) {
   <div class="routes-list">
-    @for (route of routes; track route.name) {
-    <div class="route-item">
+    @for (route of routes(); track route.name) {
+    <div
+      class="route-item"
+      [class.selected]="selectedRoute()?.name === route.name && showMap()"
+      (click)="onRouteClick(route)"
+    >
       <div class="route-header">
         <span class="route-name">{{ route.name }}</span>
         <span class="traffic-indicator" [ngClass]="getTrafficClass(route.traffic)">
@@ -27,16 +32,104 @@
         </span>
       </div>
       <div class="route-details">
-        <span class="duration">⏱️ {{ route.durationInTraffic }} min</span>
-        <span class="distance">📍 {{ route.distance }} km</span>
+        <div class="duration-info">
+          <span class="current-duration">⏱️ {{ route.durationInTraffic }} min</span>
+          @if (route.durationInTraffic > route.duration) {
+          <span class="delay-info"> ({{ getDelayText(route) }}) </span>
+          } @else {
+          <span class="no-delay"> (typical time) </span>
+          }
+        </div>
+        <div class="additional-info">
+          <span class="distance">📍 {{ route.distance }} km</span>
+          <span class="typical-duration">🕐 Typical: {{ route.duration }} min</span>
+        </div>
       </div>
+      @if (selectedRoute()?.name === route.name && showMap()) {
+      <div class="click-hint">🗺️ Click again to open in Google Maps</div>
+      }
     </div>
     }
   </div>
   }
 
+  <!-- Embedded Map Display -->
+  @if (showMap() && selectedRoute()) {
+  <div class="map-container">
+    <div class="map-header">
+      <h3>{{ selectedRoute()!.name }}</h3>
+      <button class="close-map-btn" (click)="closeMap()" aria-label="Close map">✕</button>
+    </div>
+    <div class="map-content">
+      <iframe
+        [src]="getEmbeddedMapUrl(selectedRoute()!)"
+        [title]="'Map showing route: ' + selectedRoute()!.name"
+        class="embedded-map"
+        frameborder="0"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+      >
+      </iframe>
+      <div class="map-help">
+        <p>
+          ⚠️ If map doesn't load, you need to enable <strong>Maps Embed API</strong> in Google Cloud
+          Console:
+        </p>
+        <ol>
+          <li>
+            Go to
+            <a
+              href="https://console.cloud.google.com/apis/library/embed-backend.googleapis.com"
+              target="_blank"
+              >Maps Embed API</a
+            >
+          </li>
+          <li>Click "Enable"</li>
+          <li>Refresh this page</li>
+        </ol>
+      </div>
+    </div>
+    <div class="map-footer">
+      <button class="open-full-map-btn" (click)="openInGoogleMaps(selectedRoute()!)">
+        🗺️ Open in Google Maps
+      </button>
+    </div>
+  </div>
+  }
+
   <div class="traffic-note">
-    @if (!error) { 💡 Live traffic data from Google Maps } @else { 💡 Note: Using mock data. Check
+    @if (!error()) { 💡 Live traffic data from Google Maps } @else { 💡 Note: Using mock data. Check
     console for errors. }
   </div>
+
+  <!-- Debug Panel (only shown when debug mode is enabled) -->
+  @if (debugMode()) {
+  <div class="debug-panel">
+    <button class="debug-toggle" (click)="toggleDebugPanel()">
+      {{ debugPanelOpen() ? '▼' : '▶' }} Debug Controls
+    </button>
+
+    @if (debugPanelOpen()) {
+    <div class="debug-controls">
+      <h4>Test Error States:</h4>
+      <div class="debug-buttons">
+        <button (click)="simulateError('quota')">API Quota Error</button>
+        <button (click)="simulateError('apikey')">API Key Error</button>
+        <button (click)="simulateError('notfound')">Location Not Found</button>
+        <button (click)="simulateError('offline')">Offline Error</button>
+        <button (click)="simulateError('generic')">Generic Error</button>
+      </div>
+
+      <h4>Test States:</h4>
+      <div class="debug-buttons">
+        <button (click)="simulateLoading()">Loading State</button>
+        <button (click)="simulateMockData()">Mock Data</button>
+        <button (click)="loadTrafficData()">Load Real Data</button>
+        <button (click)="clearAll()">Clear All</button>
+      </div>
+    </div>
+    }
+  </div>
+  }
 </div>

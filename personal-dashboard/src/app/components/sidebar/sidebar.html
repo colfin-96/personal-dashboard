@@ -1,0 +1,36 @@
+<div class="sidebar-overlay" [class.open]="isOpen()" (click)="closeSidebar()"></div>
+
+<div class="sidebar-container" [class.open]="isOpen()">
+  <div class="sidebar-header">
+    <h2>Settings</h2>
+    <button class="close-button" (click)="closeSidebar()">✕</button>
+  </div>
+
+  <div class="sidebar-content">
+    <div class="setting-section">
+      <h3>Developer Options</h3>
+
+      <div class="setting-item">
+        <label class="toggle-switch">
+          <input
+            type="checkbox"
+            [checked]="debugMode()"
+            (change)="toggleDebugMode()"
+            aria-label="Toggle debug mode"
+          />
+          <span class="slider"></span>
+        </label>
+        <div class="setting-info">
+          <span class="setting-label">Debug Mode</span>
+          <span class="setting-description">Show debug controls in widgets</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Future settings can go here -->
+    <div class="setting-section">
+      <h3>General</h3>
+      <p class="coming-soon">More settings coming soon...</p>
+    </div>
+  </div>
+</div>
