@@ -1,0 +1,76 @@
+.routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.route-item {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: #e9ecef;
+  }
+}
+
+.route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.route-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.traffic-indicator {
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+
+  &.traffic-light {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  &.traffic-moderate {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  &.traffic-heavy {
+    background: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.route-details {
+  display: flex;
+  gap: 20px;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.duration,
+.distance {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.traffic-note {
+  margin-top: 16px;
+  padding: 12px;
+  background: #e7f3ff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #0066cc;
+  border-left: 4px solid #667eea;
+}

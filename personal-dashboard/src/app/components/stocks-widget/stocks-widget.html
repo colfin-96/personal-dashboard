@@ -1,0 +1,27 @@
+<div class="widget stocks-widget">
+  <h2 class="widget-title">Stock Prices</h2>
+
+  @if (loading) {
+  <div class="loading">Loading stock data...</div>
+  } @else {
+  <div class="stocks-list">
+    @for (stock of stocks; track stock.symbol) {
+    <div class="stock-item">
+      <div class="stock-symbol">{{ stock.symbol }}</div>
+      <div class="stock-info">
+        <div class="stock-price">${{ stock.price.toFixed(2) }}</div>
+        <div
+          class="stock-change"
+          [class.positive]="stock.change > 0"
+          [class.negative]="stock.change < 0"
+        >
+          {{ stock.change > 0 ? '+' : '' }}{{ stock.change.toFixed(2) }} ({{
+            stock.changePercent > 0 ? '+' : ''
+          }}{{ stock.changePercent.toFixed(2) }}%)
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

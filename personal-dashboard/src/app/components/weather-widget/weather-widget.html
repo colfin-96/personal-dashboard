@@ -1,0 +1,25 @@
+<div class="widget weather-widget">
+  <h2 class="widget-title">Weather</h2>
+
+  @if (loading) {
+  <div class="loading">Loading weather data...</div>
+  } @else if (error) {
+  <div class="error">{{ error }}</div>
+  } @else {
+  <div class="weather-content">
+    <div class="location">{{ location }}</div>
+    <div class="temperature">{{ temperature }}°C</div>
+    <div class="description">{{ description }}</div>
+    <div class="weather-details">
+      <div class="detail">
+        <span class="label">Humidity:</span>
+        <span class="value">{{ humidity }}%</span>
+      </div>
+      <div class="detail">
+        <span class="label">Wind:</span>
+        <span class="value">{{ windSpeed }} km/h</span>
+      </div>
+    </div>
+  </div>
+  }
+</div>

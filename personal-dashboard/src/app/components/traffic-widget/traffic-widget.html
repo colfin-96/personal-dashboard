@@ -1,0 +1,24 @@
+<div class="widget traffic-widget">
+  <h2 class="widget-title">Traffic</h2>
+
+  <div class="routes-list">
+    @for (route of routes; track route.name) {
+    <div class="route-item">
+      <div class="route-header">
+        <span class="route-name">{{ route.name }}</span>
+        <span class="traffic-indicator" [ngClass]="getTrafficClass(route.traffic)">
+          {{ getTrafficIcon(route.traffic) }} {{ route.traffic }}
+        </span>
+      </div>
+      <div class="route-details">
+        <span class="duration">⏱️ {{ route.duration }}</span>
+        <span class="distance">📍 {{ route.distance }}</span>
+      </div>
+    </div>
+    }
+  </div>
+
+  <div class="traffic-note">
+    💡 Note: Using mock data. Connect Google Maps API for real traffic info.
+  </div>
+</div>
