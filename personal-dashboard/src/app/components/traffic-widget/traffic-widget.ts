@@ -1,11 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-interface Route {
+export interface Route {
   name: string;
-  duration: string;
-  distance: string;
+  origin: string;      // Starting address or place
+  destination: string; // Ending address or place
+  duration: number;    // Normal duration in minutes
+  durationInTraffic: number; // Current duration with traffic in minutes
+  distance: number;    // Distance in kilometers
   traffic: 'light' | 'moderate' | 'heavy';
+}
+
+// Interface for saved route configuration (what user defines)
+export interface SavedRoute {
+  name: string;
+  origin: string;
+  destination: string;
 }
 
 @Component({
@@ -18,12 +28,35 @@ export class TrafficWidget implements OnInit {
   routes: Route[] = [];
 
   ngOnInit(): void {
-    // Mock traffic data
-    // In a real app, you'd use Google Maps API or similar
+    // Mock traffic data - will be replaced with real Google Maps data
     this.routes = [
-      { name: 'Home to Work', duration: '25 min', distance: '12.5 km', traffic: 'moderate' },
-      { name: 'Home to Downtown', duration: '18 min', distance: '8.2 km', traffic: 'light' },
-      { name: 'To Airport', duration: '45 min', distance: '28 km', traffic: 'heavy' }
+      {
+        name: 'Home to Work',
+        origin: 'Home',
+        destination: 'Work',
+        duration: 20,
+        durationInTraffic: 25,
+        distance: 12.5,
+        traffic: 'moderate'
+      },
+      {
+        name: 'Home to Downtown',
+        origin: 'Home',
+        destination: 'Downtown',
+        duration: 15,
+        durationInTraffic: 18,
+        distance: 8.2,
+        traffic: 'light'
+      },
+      {
+        name: 'To Airport',
+        origin: 'Home',
+        destination: 'Airport',
+        duration: 35,
+        durationInTraffic: 45,
+        distance: 28,
+        traffic: 'heavy'
+      }
     ];
   }
 
