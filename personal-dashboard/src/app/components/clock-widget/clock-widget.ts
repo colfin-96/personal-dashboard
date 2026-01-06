@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,14 +11,23 @@ export class ClockWidget implements OnInit, OnDestroy {
   currentTime: Date = new Date();
   private intervalId: any;
 
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
+  ) { }
+
   ngOnInit(): void {
+    console.log('ClockWidget: ngOnInit called');
+    // Update time immediately
+    this.currentTime = new Date();
+
     // Update time every second
     this.intervalId = setInterval(() => {
+      console.log('ClockWidget: Updating time');
       this.currentTime = new Date();
+      this.cdr.detectChanges(); // Force change detection
     }, 1000);
-  }
-
-  ngOnDestroy(): void {
+  } ngOnDestroy(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }

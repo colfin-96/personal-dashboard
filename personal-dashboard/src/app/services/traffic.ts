@@ -12,21 +12,40 @@ export class TrafficService {
     private directionsService: google.maps.DirectionsService | null = null;
 
     constructor() {
-        // Initialize the Directions Service when Google Maps is loaded
-        this.initializeDirectionsService();
+        // Don't initialize in constructor - wait until it's actually needed
     }
 
     /**
      * Initialize Google Maps Directions Service
      * Waits for Google Maps API to be loaded
      */
-    private initializeDirectionsService(): void {
-        if (typeof google !== 'undefined' && google.maps) {
-            this.directionsService = new google.maps.DirectionsService();
-        } else {
-            // If Google Maps isn't loaded yet, wait and try again
-            setTimeout(() => this.initializeDirectionsService(), 100);
+    private async initializeDirectionsService(): Promise<void> {
+        if (this.directionsService) {
+            return; // Already initialized
         }
+
+        const maxAttempts = 100; // 10 seconds max wait
+        let attempts = 0;
+
+        return new Promise((resolve, reject) => {
+            const checkGoogle = () => {
+                if (typeof google !== 'undefined' && google.maps && google.maps.DirectionsService) {
+                    this.directionsService = new google.maps.DirectionsService();
+                    console.log('Google Maps Directions Service initialized successfully');
+                    resolve();
+                } else {
+                    attempts++;
+                    if (attempts >= maxAttempts) {
+                        const error = 'Failed to initialize Google Maps: API not loaded after 10 seconds. Check if API key is set correctly in index.html';
+                        console.error(error);
+                        reject(new Error(error));
+                    } else {
+                        setTimeout(checkGoogle, 100);
+                    }
+                }
+            };
+            checkGoogle();
+        });
     }
 
     /**
@@ -35,41 +54,42 @@ export class TrafficService {
      * @returns Observable<Route> with traffic information
      */
     getRouteWithTraffic(savedRoute: SavedRoute): Observable<Route> {
-        if (!this.directionsService) {
-            throw new Error('Google Maps Directions Service is not initialized');
-        }
+        // First initialize the service, then make the request
+        return from(
+            this.initializeDirectionsService().then(() => {
+                if (!this.directionsService) {
+                    throw new Error('Google Maps Directions Service failed to initialize');
+                }
 
-        const request: google.maps.DirectionsRequest = {
-            origin: savedRoute.origin,
-            destination: savedRoute.destination,
-            travelMode: google.maps.TravelMode.DRIVING,
-            drivingOptions: {
-                departureTime: new Date(), // Current time for traffic data
-                trafficModel: google.maps.TrafficModel.BEST_GUESS,
-            },
-        };
+                const request: google.maps.DirectionsRequest = {
+                    origin: savedRoute.origin,
+                    destination: savedRoute.destination,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    drivingOptions: {
+                        departureTime: new Date(),
+                        trafficModel: google.maps.TrafficModel.BEST_GUESS,
+                    },
+                };
 
-        // Convert the callback-based API to a Promise, then to Observable
-        const directionsPromise = new Promise<google.maps.DirectionsResult>(
-            (resolve, reject) => {
-                this.directionsService!.route(
-                    request,
-                    (
-                        result: google.maps.DirectionsResult | null,
-                        status: google.maps.DirectionsStatus
-                    ) => {
-                        if (status === google.maps.DirectionsStatus.OK && result) {
-                            resolve(result);
-                        } else {
-                            reject(new Error(`Directions request failed: ${status}`));
+                // Return a promise for the directions result
+                return new Promise<google.maps.DirectionsResult>((resolve, reject) => {
+                    this.directionsService!.route(
+                        request,
+                        (
+                            result: google.maps.DirectionsResult | null,
+                            status: google.maps.DirectionsStatus
+                        ) => {
+                            if (status === google.maps.DirectionsStatus.OK && result) {
+                                resolve(result);
+                            } else {
+                                reject(new Error(`Directions request failed: ${status}`));
+                            }
                         }
-                    }
-                );
-            }
-        );
-
-        return from(directionsPromise).pipe(
-            map((result) => this.parseDirectionsResult(savedRoute.name, result))
+                    );
+                });
+            }).then((result) => {
+                return this.parseDirectionsResult(savedRoute.name, result);
+            })
         );
     }
 

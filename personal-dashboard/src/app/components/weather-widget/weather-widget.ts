@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Weather } from '../../services/weather';
 
@@ -17,10 +17,16 @@ export class WeatherWidget implements OnInit {
   loading: boolean = true;
   error: string = '';
 
-  constructor(private weatherService: Weather) { }
+  constructor(
+    private weatherService: Weather,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    this.getLocation();
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.getLocation();
+    }, 0);
   }
 
   getLocation(): void {
@@ -50,11 +56,13 @@ export class WeatherWidget implements OnInit {
         this.windSpeed = Math.round(data.current.wind_speed_10m);
         this.description = this.getWeatherDescription(data.current.weather_code);
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Weather fetch error:', err);
         this.error = 'Failed to fetch weather data';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -63,10 +71,12 @@ export class WeatherWidget implements OnInit {
     this.weatherService.getLocationName(lat, lon).subscribe({
       next: (data) => {
         this.location = data.city || data.locality || 'Unknown Location';
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Location fetch error:', err);
         this.location = 'Unknown Location';
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,6 +1,22 @@
 <div class="widget traffic-widget">
   <h2 class="widget-title">Traffic</h2>
 
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="loading-state">
+    <p>🔄 Loading traffic data...</p>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+  <div class="error-state">
+    <p>⚠️ {{ error }}</p>
+  </div>
+  }
+
+  <!-- Routes List -->
+  @if (!loading) {
   <div class="routes-list">
     @for (route of routes; track route.name) {
     <div class="route-item">
@@ -17,8 +33,10 @@
     </div>
     }
   </div>
+  }
 
   <div class="traffic-note">
-    💡 Note: Using mock data. Connect Google Maps API for real traffic info.
+    @if (!error) { 💡 Live traffic data from Google Maps } @else { 💡 Note: Using mock data. Check
+    console for errors. }
   </div>
 </div>

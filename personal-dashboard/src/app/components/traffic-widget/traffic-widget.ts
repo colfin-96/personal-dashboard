@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TrafficService } from '../../services/traffic';
 
 export interface Route {
   name: string;
@@ -26,9 +27,62 @@ export interface SavedRoute {
 })
 export class TrafficWidget implements OnInit {
   routes: Route[] = [];
+  loading: boolean = true;
+  error: string | null = null;
+
+  // Define your saved routes here with real addresses
+  // TODO: Replace these with your actual addresses!
+  private savedRoutes: SavedRoute[] = [
+    {
+      name: 'Home to Work',
+      origin: '1600 Amphitheatre Parkway, Mountain View, CA', // Example - replace with your address
+      destination: 'San Francisco, CA' // Example - replace with your address
+    },
+    {
+      name: 'Home to Airport',
+      origin: '1600 Amphitheatre Parkway, Mountain View, CA', // Example - replace with your address
+      destination: 'San Francisco International Airport, CA'
+    },
+    // Add more routes as needed
+  ];
+
+  constructor(
+    private trafficService: TrafficService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
-    // Mock traffic data - will be replaced with real Google Maps data
+    this.loadTrafficData();
+  }
+
+  /**
+   * Load traffic data from Google Maps API
+   */
+  loadTrafficData(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.trafficService.getMultipleRoutesWithTraffic(this.savedRoutes).subscribe({
+      next: (routes) => {
+        this.routes = routes;
+        this.loading = false;
+        this.cdr.detectChanges(); // Manually trigger change detection
+      },
+      error: (err) => {
+        console.error('TrafficWidget: Error loading traffic data:', err);
+        this.error = 'Failed to load traffic data. Using mock data.';
+        this.loading = false;
+        this.cdr.detectChanges(); // Manually trigger change detection
+        // Fall back to mock data
+        this.loadMockData();
+      }
+    });
+  }
+
+  /**
+   * Fallback mock data if API fails
+   */
+  private loadMockData(): void {
     this.routes = [
       {
         name: 'Home to Work',
@@ -40,16 +94,7 @@ export class TrafficWidget implements OnInit {
         traffic: 'moderate'
       },
       {
-        name: 'Home to Downtown',
-        origin: 'Home',
-        destination: 'Downtown',
-        duration: 15,
-        durationInTraffic: 18,
-        distance: 8.2,
-        traffic: 'light'
-      },
-      {
-        name: 'To Airport',
+        name: 'Home to Airport',
         origin: 'Home',
         destination: 'Airport',
         duration: 35,
