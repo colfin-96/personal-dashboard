@@ -1,0 +1,42 @@
+<div class="widget sports-widget">
+  <h2 class="widget-title">Sports News</h2>
+
+  <div class="teams-info">
+    <span class="team-badge barcelona">FCB</span>
+    <span class="team-badge dortmund">BVB</span>
+    <span class="team-badge koln">FC</span>
+    <span class="team-badge nfl">NFL</span>
+  </div>
+
+  @if (loading()) {
+  <div class="loading">Loading sports news...</div>
+  } @else if (error()) {
+  <div class="error">{{ error() }}</div>
+  } @else {
+  <div class="news-content">
+    @for (article of news(); track article.url) {
+    <a [href]="article.url" target="_blank" rel="noopener noreferrer" class="news-item-link">
+      <div class="news-item">
+        <div class="news-header">
+          @if (article.team) {
+          <span class="team-tag" [style.background-color]="getTeamBadgeColor(article.team)">
+            {{ article.team }}
+          </span>
+          } @else if (article.league) {
+          <span class="team-tag" [style.background-color]="getTeamBadgeColor()">
+            {{ article.league }}
+          </span>
+          }
+          <span class="time-ago">{{ getTimeAgo(article.publishedAt) }}</span>
+        </div>
+        <h3 class="news-title">{{ article.title }}</h3>
+        <p class="news-description">{{ article.description }}</p>
+        <div class="news-footer">
+          <span class="source">{{ article.source }}</span>
+        </div>
+      </div>
+    </a>
+    }
+  </div>
+  }
+</div>
